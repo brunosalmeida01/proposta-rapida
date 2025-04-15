@@ -41,9 +41,16 @@ function App() {
     console.log("Formulário preenchido:", form);
   }
 
-  function calcularSugestao(tipo: string, convidados: number) {
-    if (!tipo || convidados <= 0) {
-      setSugestao("Preencha o tipo de evento e o número de convidados.");
+  function calcularSugestao(tipo: string, convidados: number | string) {
+    const qtd = Number(convidados);
+
+    if (!tipo) {
+      setSugestao("⚠️ Por favor, selecione o tipo de evento.");
+      return;
+    }
+
+    if (!qtd || qtd <= 0 || isNaN(qtd)) {
+      setSugestao("⚠️ Informe o número de convidados válido para calcular.");
       return;
     }
 
@@ -52,43 +59,43 @@ function App() {
     switch (tipo) {
       case "Churrasco":
         texto = `
-💡 Recomendação para ${convidados} convidados:
+💡 Recomendação para ${qtd} convidados:
 
 • Churrasqueiro: R$350 (5h)
 • Carnes variadas (3 tipos) + acompanhamentos
 • Louças descartáveis ou de vidro
 • Valor sugerido por pessoa: R$55,00
-• Total estimado: R$${(convidados * 55).toFixed(2)}
+• Total estimado: R$${(qtd * 55).toFixed(2)}
         `;
         break;
 
       case "Brunch":
         texto = `
-💡 Recomendação para ${convidados} convidados:
+💡 Recomendação para ${qtd} convidados:
 
 • 2 tipos de patês, 2 quiches, 2 sobremesas, frutas
 • 1 massa + 1 carne (ex: filé mignon laminado)
 • Arroz à piemontese, pão de queijo, empadão
 • Valor sugerido por pessoa: R$70,00
-• Total estimado: R$${(convidados * 70).toFixed(2)}
+• Total estimado: R$${(qtd * 70).toFixed(2)}
         `;
         break;
 
       case "Coffee Break":
         texto = `
-💡 Recomendação para ${convidados} convidados:
+💡 Recomendação para ${qtd} convidados:
 
 • Café, leite, chá, chocolate quente
 • Suco (2 tipos), refrigerante (2 tipos), água (c/gás)
 • Mix de 10 tipos: salgados, doces, petit fours, frutas secas
 • Equipe de apoio: 3 pessoas (R$540/dia)
 • Valor sugerido por pessoa: R$45,00
-• Total estimado: R$${(convidados * 45 + 540).toFixed(2)}
+• Total estimado: R$${(qtd * 45 + 540).toFixed(2)}
         `;
         break;
 
       default:
-        texto = "Tipo de evento não reconhecido.";
+        texto = "⚠️ Tipo de evento não reconhecido.";
     }
 
     setSugestao(texto.trim());
@@ -140,7 +147,7 @@ function App() {
         <button
           type="button"
           style={{ ...styles.button, backgroundColor: '#555' }}
-          onClick={() => calcularSugestao(form.tipo, parseInt(form.convidados))}
+          onClick={() => calcularSugestao(form.tipo, form.convidados)}
         >
           Me ajude a calcular
         </button>
@@ -205,4 +212,3 @@ const styles: { [key: string]: React.CSSProperties } = {
 };
 
 export default App;
-
