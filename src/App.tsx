@@ -16,6 +16,8 @@ function App() {
     }
   });
 
+  const [sugestao, setSugestao] = useState('');
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value, type, checked } = e.target;
 
@@ -37,7 +39,59 @@ function App() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     console.log("Formulário preenchido:", form);
-    // Aqui você pode chamar a IA depois
+  }
+
+  function calcularSugestao(tipo: string, convidados: number) {
+    if (!tipo || convidados <= 0) {
+      setSugestao("Preencha o tipo de evento e o número de convidados.");
+      return;
+    }
+
+    let texto = "";
+
+    switch (tipo) {
+      case "Churrasco":
+        texto = `
+💡 Recomendação para ${convidados} convidados:
+
+• Churrasqueiro: R$350 (5h)
+• Carnes variadas (3 tipos) + acompanhamentos
+• Louças descartáveis ou de vidro
+• Valor sugerido por pessoa: R$55,00
+• Total estimado: R$${(convidados * 55).toFixed(2)}
+        `;
+        break;
+
+      case "Brunch":
+        texto = `
+💡 Recomendação para ${convidados} convidados:
+
+• 2 tipos de patês, 2 quiches, 2 sobremesas, frutas
+• 1 massa + 1 carne (ex: filé mignon laminado)
+• Arroz à piemontese, pão de queijo, empadão
+• Valor sugerido por pessoa: R$70,00
+• Total estimado: R$${(convidados * 70).toFixed(2)}
+        `;
+        break;
+
+      case "Coffee Break":
+        texto = `
+💡 Recomendação para ${convidados} convidados:
+
+• Café, leite, chá, chocolate quente
+• Suco (2 tipos), refrigerante (2 tipos), água (c/gás)
+• Mix de 10 tipos: salgados, doces, petit fours, frutas secas
+• Equipe de apoio: 3 pessoas (R$540/dia)
+• Valor sugerido por pessoa: R$45,00
+• Total estimado: R$${(convidados * 45 + 540).toFixed(2)}
+        `;
+        break;
+
+      default:
+        texto = "Tipo de evento não reconhecido.";
+    }
+
+    setSugestao(texto.trim());
   }
 
   return (
@@ -82,6 +136,20 @@ function App() {
         )}
 
         <button type="submit" style={styles.button}>Gerar Proposta</button>
+
+        <button
+          type="button"
+          style={{ ...styles.button, backgroundColor: '#555' }}
+          onClick={() => calcularSugestao(form.tipo, parseInt(form.convidados))}
+        >
+          Me ajude a calcular
+        </button>
+
+        {sugestao && (
+          <div style={styles.resultado}>
+            <pre>{sugestao}</pre>
+          </div>
+        )}
       </form>
     </main>
   );
@@ -92,7 +160,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontFamily: 'Arial',
     padding: '2rem',
     backgroundColor: '#f4f4f4',
-    height: '100%',
     minHeight: '100vh'
   },
   title: {
@@ -101,7 +168,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '2rem'
   },
   form: {
-    maxWidth: '600px',
+    maxWidth: '700px',
     margin: '0 auto',
     display: 'flex',
     flexDirection: 'column',
@@ -125,7 +192,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '1rem',
     cursor: 'pointer',
     borderRadius: '4px'
+  },
+  resultado: {
+    backgroundColor: '#f0f0f0',
+    padding: '1rem',
+    borderRadius: '6px',
+    marginTop: '1rem',
+    whiteSpace: 'pre-wrap',
+    fontSize: '0.95rem',
+    lineHeight: 1.5
   }
 };
 
 export default App;
+
