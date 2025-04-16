@@ -1,154 +1,75 @@
-import React, { useState } from 'react';
-import { gerarResumoProposta } from './services/gerarTextoIA';
 
-function App() {
-  const [form, setForm] = useState({
-    cliente: '',
-    data: '',
-    local: '',
-    convidados: '',
-    valor: '',
-    tipo: '',
-    servicoExtra: false,
-    adicionais: {
-      garcom: false,
-      copeira: false,
-      fritadeira: false
-    }
-  });
+import { useState } from "react";
 
-  const [sugestao, setSugestao] = useState('');
-  const [resumoIA, setResumoIA] = useState('');
-  const [loadingIA, setLoadingIA] = useState(false);
+export default function App() {
+  const [cliente, setCliente] = useState("");
+  const [servico, setServico] = useState("");
+  const [materiais, setMateriais] = useState([{ nome: "", valor: 0 }]);
+  const [maoDeObra, setMaoDeObra] = useState(0);
+  const [numeroWhats, setNumeroWhats] = useState("");
+  const [mensagem, setMensagem] = useState("");
 
-  function handleChange(e) {
-    const { name, value, type, checked } = e.target;
+  const adicionarMaterial = () => {
+    setMateriais([...materiais, { nome: "", valor: 0 }]);
+  };
 
-    if (name in form.adicionais) {
-      setForm({
-        ...form,
-        adicionais: {
-          ...form.adicionais,
-          [name]: checked
-        }
-      });
-    } else if (name === "servicoExtra") {
-      setForm({ ...form, [name]: checked });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
-  }
+  const atualizarMaterial = (index, campo, valor) => {
+    const novos = [...materiais];
+    novos[index][campo] = campo === "valor" ? parseFloat(valor) : valor;
+    setMateriais(novos);
+  };
 
-  async function gerarComIA() {
-    if (!form.cliente || !form.data || !form.tipo || !form.convidados) {
-      setResumoIA("⚠️ Preencha cliente, data, tipo de evento e número de convidados.");
-      return;
-    }
+  const calcularTotal = () => {
+    const totalMateriais = materiais.reduce((acc, mat) => acc + mat.valor, 0);
+    const total = totalMateriais + parseFloat(maoDeObra || "0");
 
-    setLoadingIA(true);
-    try {
-      const texto = await gerarResumoProposta(form);
-      setResumoIA(texto || "⚠️ Não foi possível gerar o texto.");
-    } catch (err) {
-      setResumoIA("⚠️ Erro ao conectar com a IA.");
-    }
-    setLoadingIA(false);
-  }
+    const texto = \`Olá, \${cliente}! Segue seu orçamento:
+
+Serviço: \${servico}
+Materiais:
+\${materiais.map((m) => "- " + m.nome + ": R$ " + m.valor.toFixed(2)).join("\n")}
+Mão de obra: R$ \${parseFloat(maoDeObra).toFixed(2)}
+
+Total: R$ \${total.toFixed(2)}
+Validade: 5 dias
+
+Obrigado!\`;
+
+    setMensagem(texto);
+  };
+
+  const linkWhatsApp = \`https://wa.me/55\${numeroWhats}?text=\${encodeURIComponent(mensagem)}\`;
 
   return (
-    <main style={styles.main}>
-      <h1 style={styles.title}>PropostaRápida.ai</h1>
-      <form style={styles.form}>
-        <label>Nome do Cliente:</label>
-        <input type="text" name="cliente" style={styles.input} onChange={handleChange} />
+    <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
+      <h2>Gerador de Orçamento para Autônomos</h2>
 
-        <label>Data do Evento:</label>
-        <input type="date" name="data" style={styles.input} onChange={handleChange} />
+      <input placeholder="Nome do cliente" value={cliente} onChange={(e) => setCliente(e.target.value)} />
+      <input placeholder="Tipo de serviço" value={servico} onChange={(e) => setServico(e.target.value)} />
+      <input placeholder="Valor da mão de obra" type="number" value={maoDeObra} onChange={(e) => setMaoDeObra(e.target.value)} />
+      <input placeholder="WhatsApp do cliente (somente números)" value={numeroWhats} onChange={(e) => setNumeroWhats(e.target.value)} />
 
-        <label>Local do Evento:</label>
-        <input type="text" name="local" style={styles.input} onChange={handleChange} />
+      <h4>Materiais</h4>
+      {materiais.map((mat, i) => (
+        <div key={i}>
+          <input placeholder="Nome do material" value={mat.nome} onChange={(e) => atualizarMaterial(i, "nome", e.target.value)} />
+          <input type="number" placeholder="Valor (R$)" value={mat.valor} onChange={(e) => atualizarMaterial(i, "valor", e.target.value)} />
+        </div>
+      ))}
+      <button onClick={adicionarMaterial}>+ Material</button>
 
-        <label>Nº de Convidados:</label>
-        <input type="number" name="convidados" style={styles.input} onChange={handleChange} />
+      <br /><br />
+      <button onClick={calcularTotal}>Gerar Orçamento</button>
 
-        <label>Valor por Pessoa (R$):</label>
-        <input type="number" name="valor" style={styles.input} onChange={handleChange} />
-
-        <label>Tipo de Evento:</label>
-        <select name="tipo" style={styles.input} onChange={handleChange}>
-          <option value="">Selecione</option>
-          <option value="Churrasco">Churrasco</option>
-          <option value="Coffee Break">Coffee Break</option>
-          <option value="Brunch">Brunch</option>
-          <option value="Assador de Churrasco">Assador de Churrasco</option>
-        </select>
-
-        <button
-          type="button"
-          style={{ ...styles.button, backgroundColor: '#0A0' }}
-          onClick={gerarComIA}
-        >
-          {loadingIA ? 'Gerando...' : 'Gerar texto com IA'}
-        </button>
-
-        {resumoIA && (
-          <div style={styles.resultado}>
-            <strong>Resumo gerado pela IA:</strong>
-            <p>{resumoIA}</p>
-          </div>
-        )}
-      </form>
-    </main>
+      {mensagem && (
+        <div style={{ marginTop: 20 }}>
+          <h4>Proposta:</h4>
+          <pre>{mensagem}</pre>
+          <a href={linkWhatsApp} target="_blank" rel="noopener noreferrer">
+            <button>Enviar no WhatsApp</button>
+          </a>
+        </div>
+      )}
+    </div>
   );
 }
-
-const styles = {
-  main: {
-    fontFamily: 'Arial',
-    padding: '2rem',
-    backgroundColor: '#f4f4f4',
-    minHeight: '100vh'
-  },
-  title: {
-    textAlign: 'center',
-    fontSize: '2rem',
-    marginBottom: '2rem'
-  },
-  form: {
-    maxWidth: '700px',
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-    backgroundColor: '#fff',
-    padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 0 10px rgba(0,0,0,0.1)'
-  },
-  input: {
-    padding: '0.5rem',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
-    fontSize: '1rem'
-  },
-  button: {
-    backgroundColor: '#0070f3',
-    color: '#fff',
-    border: 'none',
-    padding: '1rem',
-    fontSize: '1rem',
-    cursor: 'pointer',
-    borderRadius: '4px'
-  },
-  resultado: {
-    backgroundColor: '#f0f0f0',
-    padding: '1rem',
-    borderRadius: '6px',
-    marginTop: '1rem',
-    whiteSpace: 'pre-wrap',
-    fontSize: '0.95rem',
-    lineHeight: 1.5
-  }
-};
-
-export default App;
