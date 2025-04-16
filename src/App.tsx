@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { gerarResumoProposta } from './services/gerarTextoIA';
 
 function App() {
   const [form, setForm] = useState({
@@ -17,8 +18,10 @@ function App() {
   });
 
   const [sugestao, setSugestao] = useState('');
+  const [resumoIA, setResumoIA] = useState('');
+  const [loadingIA, setLoadingIA] = useState(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+  function handleChange(e) {
     const { name, value, type, checked } = e.target;
 
     if (name in form.adicionais) {
@@ -36,75 +39,26 @@ function App() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    console.log("Formulário preenchido:", form);
-  }
-
-  function calcularSugestao(tipo: string, convidados: number | string) {
-    const qtd = Number(convidados);
-
-    if (!tipo) {
-      setSugestao("⚠️ Por favor, selecione o tipo de evento.");
+  async function gerarComIA() {
+    if (!form.cliente || !form.data || !form.tipo || !form.convidados) {
+      setResumoIA("⚠️ Preencha cliente, data, tipo de evento e número de convidados.");
       return;
     }
 
-    if (!qtd || qtd <= 0 || isNaN(qtd)) {
-      setSugestao("⚠️ Informe o número de convidados válido para calcular.");
-      return;
+    setLoadingIA(true);
+    try {
+      const texto = await gerarResumoProposta(form);
+      setResumoIA(texto || "⚠️ Não foi possível gerar o texto.");
+    } catch (err) {
+      setResumoIA("⚠️ Erro ao conectar com a IA.");
     }
-
-    let texto = "";
-
-    switch (tipo) {
-      case "Churrasco":
-        texto = `
-💡 Recomendação para ${qtd} convidados:
-
-• Churrasqueiro: R$350 (5h)
-• Carnes variadas (3 tipos) + acompanhamentos
-• Louças descartáveis ou de vidro
-• Valor sugerido por pessoa: R$55,00
-• Total estimado: R$${(qtd * 55).toFixed(2)}
-        `;
-        break;
-
-      case "Brunch":
-        texto = `
-💡 Recomendação para ${qtd} convidados:
-
-• 2 tipos de patês, 2 quiches, 2 sobremesas, frutas
-• 1 massa + 1 carne (ex: filé mignon laminado)
-• Arroz à piemontese, pão de queijo, empadão
-• Valor sugerido por pessoa: R$70,00
-• Total estimado: R$${(qtd * 70).toFixed(2)}
-        `;
-        break;
-
-      case "Coffee Break":
-        texto = `
-💡 Recomendação para ${qtd} convidados:
-
-• Café, leite, chá, chocolate quente
-• Suco (2 tipos), refrigerante (2 tipos), água (c/gás)
-• Mix de 10 tipos: salgados, doces, petit fours, frutas secas
-• Equipe de apoio: 3 pessoas (R$540/dia)
-• Valor sugerido por pessoa: R$45,00
-• Total estimado: R$${(qtd * 45 + 540).toFixed(2)}
-        `;
-        break;
-
-      default:
-        texto = "⚠️ Tipo de evento não reconhecido.";
-    }
-
-    setSugestao(texto.trim());
+    setLoadingIA(false);
   }
 
   return (
     <main style={styles.main}>
       <h1 style={styles.title}>PropostaRápida.ai</h1>
-      <form style={styles.form} onSubmit={handleSubmit}>
+      <form style={styles.form}>
         <label>Nome do Cliente:</label>
         <input type="text" name="cliente" style={styles.input} onChange={handleChange} />
 
@@ -129,32 +83,18 @@ function App() {
           <option value="Assador de Churrasco">Assador de Churrasco</option>
         </select>
 
-        <label>
-          <input type="checkbox" name="servicoExtra" onChange={handleChange} />
-          Deseja adicionar serviço agregado (Set Box)?
-        </label>
-
-        {form.servicoExtra && (
-          <div>
-            <label><input type="checkbox" name="garcom" onChange={handleChange} /> Garçom</label><br />
-            <label><input type="checkbox" name="copeira" onChange={handleChange} /> Copeira</label><br />
-            <label><input type="checkbox" name="fritadeira" onChange={handleChange} /> Fritadeira</label>
-          </div>
-        )}
-
-        <button type="submit" style={styles.button}>Gerar Proposta</button>
-
         <button
           type="button"
-          style={{ ...styles.button, backgroundColor: '#555' }}
-          onClick={() => calcularSugestao(form.tipo, form.convidados)}
+          style={{ ...styles.button, backgroundColor: '#0A0' }}
+          onClick={gerarComIA}
         >
-          Me ajude a calcular
+          {loadingIA ? 'Gerando...' : 'Gerar texto com IA'}
         </button>
 
-        {sugestao && (
+        {resumoIA && (
           <div style={styles.resultado}>
-            <pre>{sugestao}</pre>
+            <strong>Resumo gerado pela IA:</strong>
+            <p>{resumoIA}</p>
           </div>
         )}
       </form>
@@ -162,7 +102,7 @@ function App() {
   );
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
+const styles = {
   main: {
     fontFamily: 'Arial',
     padding: '2rem',
