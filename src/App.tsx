@@ -53,25 +53,62 @@ function App() {
   }
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'Arial' }}>
-      <h1>PropostaRápida.ai</h1>
-      <form>
-        <input type="text" name="cliente" placeholder="Nome do Cliente" onChange={handleChange} />
+    <main style={{ fontFamily: 'Arial', padding: '2rem', backgroundColor: '#f4f4f4', minHeight: '100vh' }}>
+      <h1 style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '2rem' }}>PropostaRápida.ai</h1>
+      <form style={{
+        maxWidth: '700px',
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        backgroundColor: '#fff',
+        padding: '2rem',
+        borderRadius: '8px',
+        boxShadow: '0 0 10px rgba(0,0,0,0.1)'
+      }}>
+        <label>Nome do Cliente:</label>
+        <input type="text" name="cliente" onChange={handleChange} />
+
+        <label>Data do Evento:</label>
         <input type="date" name="data" onChange={handleChange} />
-        <input type="text" name="local" placeholder="Local" onChange={handleChange} />
-        <input type="number" name="convidados" placeholder="Nº de Convidados" onChange={handleChange} />
-        <input type="number" name="valor" placeholder="Valor por Pessoa (R$)" onChange={handleChange} />
+
+        <label>Local do Evento:</label>
+        <input type="text" name="local" onChange={handleChange} />
+
+        <label>Nº de Convidados:</label>
+        <input type="number" name="convidados" onChange={handleChange} />
+
+        <label>Valor por Pessoa (R$):</label>
+        <input type="number" name="valor" onChange={handleChange} />
+
+        <label>Tipo de Evento:</label>
         <select name="tipo" onChange={handleChange}>
-          <option value="">Selecione o tipo de evento</option>
+          <option value="">Selecione</option>
           <option value="Churrasco">Churrasco</option>
           <option value="Coffee Break">Coffee Break</option>
           <option value="Brunch">Brunch</option>
           <option value="Assador de Churrasco">Assador de Churrasco</option>
         </select>
-        <button type="button" onClick={gerarComIA}>
-          {loadingIA ? 'Gerando...' : 'Gerar texto com IA'}
+
+        <label>
+          <input type="checkbox" name="servicoExtra" onChange={handleChange} />
+          Deseja adicionar serviço agregado (Set Box)?
+        </label>
+
+        <button
+          type="button"
+          style={{ backgroundColor: '#0070f3', color: '#fff', border: 'none', padding: '1rem', fontSize: '1rem', cursor: 'pointer', borderRadius: '4px' }}
+          onClick={gerarComIA}
+        >
+          {loadingIA ? 'Gerando...' : 'Gerar Proposta com IA'}
         </button>
-        {resumoIA && <pre>{resumoIA}</pre>}
+
+        {resumoIA && (
+          <div style={{ backgroundColor: '#f0f0f0', padding: '1rem', borderRadius: '6px', marginTop: '1rem', whiteSpace: 'pre-wrap' }}>
+            <strong>Resumo gerado pela IA:</strong>
+            <p>{resumoIA}</p>
+          </div>
+        )}
       </form>
     </main>
   );
