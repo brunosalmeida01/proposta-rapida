@@ -3,42 +3,139 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PropostaRápida.ai</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>PropostaRápida.AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+      font-size: 12px;
+    }
+    .container h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    .service-group div {
+      margin-bottom: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    #resultado {
+      background-color: #f4f4f4;
+      padding: 10px;
+      margin-top: 15px;
+      white-space: pre-wrap;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>PropostaRápida.ai</h1>
-    <label for="cliente">Nome do Cliente</label>
+    <h1>PropostaRápida.AI</h1>
+    <label>Nome do Cliente</label>
     <input type="text" id="cliente" />
 
-    <label for="data">Data</label>
+    <label>Data</label>
     <input type="date" id="data" />
 
-    <label for="local">Local do Evento</label>
+    <label>Local do Evento</label>
     <input type="text" id="local" />
 
-    <label for="convidados">Nº de Convidados <span class="required">*</span></label>
-    <input type="number" id="convidados" required />
+    <label>Nº de Convidados <span style="color:red">*</span></label>
+    <input type="number" id="convidados" />
 
-    <label for="margem">Margem de Lucro Desejada (%)</label>
+    <label>Margem de Lucro (%)</label>
     <input type="number" id="margem" value="35" />
 
-    <label>Serviços a serem prestados:</label>
+    <label>Deseja adicionar serviço agregado?</label>
     <div class="service-group">
-      <div><span>Assador de Churrasco:</span><input type="number" id="churrasqueiro" placeholder="R$" /></div>
-      <div><span>Garçom:</span><input type="number" id="garcom" placeholder="R$" /></div>
-      <div><span>Copeira:</span><input type="number" id="copeira" placeholder="R$" /></div>
-      <div><span>Fritadeira:</span><input type="number" id="fritadeira" placeholder="R$" /></div>
-      <div><span>Manobrista:</span><input type="number" id="manobrista" placeholder="R$" /></div>
-      <div><span>Assistente de Limpeza:</span><input type="number" id="limpeza" placeholder="R$" /></div>
+      <div><span>Assador de Churrasco:</span> <input type="number" id="churrasqueiro" placeholder="R$" /></div>
+      <div><span>Garçom:</span> <input type="number" id="garcom" placeholder="R$" /></div>
+      <div><span>Copeira:</span> <input type="number" id="copeira" placeholder="R$" /></div>
+      <div><span>Fritadeira:</span> <input type="number" id="fritadeira" placeholder="R$" /></div>
+      <div><span>Manobrista:</span> <input type="number" id="manobrista" placeholder="R$" /></div>
+      <div><span>Assistente de Limpeza:</span> <input type="number" id="limpeza" placeholder="R$" /></div>
     </div>
 
     <button onclick="gerarProposta()">Gerar Proposta</button>
-
-    <pre id="resultado"></pre>
+    <div id="resultado"></div>
   </div>
-  <script src="script.js"></script>
+
+  <script>
+    function gerarProposta() {
+      const convidados = parseInt(document.getElementById("convidados").value);
+      const margem = parseFloat(document.getElementById("margem").value || "0");
+
+      if (!convidados || convidados <= 0) {
+        alert("Preencha corretamente o número de convidados.");
+        return;
+      }
+
+      const custoBase = convidados * 40;
+      let servicos = 0;
+      let descricaoServicos = [];
+
+      const camposServicos = [
+        { id: "churrasqueiro", nome: "Assador de Churrasco" },
+        { id: "garcom", nome: "Garçom" },
+        { id: "copeira", nome: "Copeira" },
+        { id: "fritadeira", nome: "Fritadeira" },
+        { id: "manobrista", nome: "Manobrista" },
+        { id: "limpeza", nome: "Assistente de Limpeza" }
+      ];
+
+      camposServicos.forEach(servico => {
+        const valor = parseFloat(document.getElementById(servico.id).value || "0");
+        if (valor > 0) {
+          servicos += valor;
+          descricaoServicos.push(`• ${servico.nome}: R$${valor.toFixed(2)}`);
+        }
+      });
+
+      const totalSemLucro = custoBase + servicos;
+      const lucro = totalSemLucro * (margem / 100);
+      const totalFinal = totalSemLucro + lucro;
+      const valorPorPessoa = totalFinal / convidados;
+
+      const texto = `Orçamento para ${convidados} convidados:
+` +
+                    `- Custo base: R$${custoBase.toFixed(2)}
+` +
+                    `${descricaoServicos.length > 0 ? descricaoServicos.join('\n') + "\n" : ""}` +
+                    `- Margem de lucro: ${margem}%
+` +
+                    `- Total com lucro: R$${totalFinal.toFixed(2)}
+` +
+                    `- Valor sugerido por pessoa: R$${valorPorPessoa.toFixed(2)}`;
+
+      document.getElementById("resultado").textContent = texto;
+    }
+  </script>
 </body>
 </html>
