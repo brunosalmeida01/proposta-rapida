@@ -1,12 +1,44 @@
+
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Proposta Rápida</title>
+  <title>PropostaRápida.ai</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
+  <div class="container">
+    <h1>PropostaRápida.ai</h1>
+    <label for="cliente">Nome do Cliente</label>
+    <input type="text" id="cliente" />
+
+    <label for="data">Data</label>
+    <input type="date" id="data" />
+
+    <label for="local">Local do Evento</label>
+    <input type="text" id="local" />
+
+    <label for="convidados">Nº de Convidados <span class="required">*</span></label>
+    <input type="number" id="convidados" required />
+
+    <label for="margem">Margem de Lucro Desejada (%)</label>
+    <input type="number" id="margem" value="35" />
+
+    <label>Serviços a serem prestados:</label>
+    <div class="service-group">
+      <div><span>Assador de Churrasco:</span><input type="number" id="churrasqueiro" placeholder="R$" /></div>
+      <div><span>Garçom:</span><input type="number" id="garcom" placeholder="R$" /></div>
+      <div><span>Copeira:</span><input type="number" id="copeira" placeholder="R$" /></div>
+      <div><span>Fritadeira:</span><input type="number" id="fritadeira" placeholder="R$" /></div>
+      <div><span>Manobrista:</span><input type="number" id="manobrista" placeholder="R$" /></div>
+      <div><span>Assistente de Limpeza:</span><input type="number" id="limpeza" placeholder="R$" /></div>
+    </div>
+
+    <button onclick="gerarProposta()">Gerar Proposta</button>
+
+    <pre id="resultado"></pre>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
